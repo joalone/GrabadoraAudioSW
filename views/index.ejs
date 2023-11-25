@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>
+    <%= title %>
+  </title>
+  <link rel='stylesheet' href='/css/style.css' />
+  <script type="module" src="/js/main.js"></script>
+  <script src="/utils/moment/moment.js"></script>
+  <script src="/utils/moment/es.js"></script>
+</head>
+<section>
+  <header>
+    <h1>Notas de Voz</h1>
+  </header>
+  <form>
+    <button id="btnRec">
+      <img src="./img/record.svg" />
+      Grabar
+    </button>
+    <button id="btnPlay">
+      <img src="./img/play.svg" />
+      Escuchar
+    </button>
+    <button id="btnUpload">
+      <img src="./img/upload.svg" />
+      Guardar
+    </button>
+  </form>
+  <div id="audioList">
+    <ul>
+
+    </ul>
+  </div>
+  <footer>
+    Sistemas Web (2023-2024)
+  </footer>
+</section>
+
+</body>
+
+</html>

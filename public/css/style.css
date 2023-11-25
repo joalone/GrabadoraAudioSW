@@ -1,0 +1,60 @@
+* {
+  /*border: red 1px solid;*/
+  font-family: 'Consolas';
+}
+
+body {
+  background-color: rgb(146, 146, 146);
+}
+
+section {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  padding: 2%;
+  border-radius: 10px;
+  border: 2px black solid;
+  box-shadow: 10px 10px black;
+
+  background-color: beige;
+  text-align: center;
+}
+
+header, footer, form {
+  padding: 5px;
+}
+
+h1 {
+  font-size: 20px;
+}
+
+
+form button {
+  display: block;
+  width: 80%;
+  margin: 5px auto;
+  border: 0px;
+  border-radius: 10px;
+  padding:5px;
+
+  color: beige;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+button:enabled {
+  background-color: #F50158;
+  border: 2px black solid;
+  cursor: pointer;
+}
+
+button:disabled {
+  background-color: #616161;
+  cursor: arrow;
+}
+
+button img {
+  margin: 0 0;
+}

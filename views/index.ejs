@@ -3,38 +3,48 @@
 
 <head>
   <title>
-    <%= title %>
+    Notas de voz
   </title>
   <link rel='stylesheet' href='/css/style.css' />
-  <script type="module" src="/js/main.js"></script>
+  <link rel="stylesheet"href="/utils/snackbar/snackbar.min.css" />
+  <script src="/utils/snackbar/snackbar.min.js"></script>
   <script src="/utils/moment/moment.js"></script>
   <script src="/utils/moment/es.js"></script>
+  <script type="module" src="/js/main.js"></script>
 </head>
 <section>
   <header>
     <h1>Notas de Voz</h1>
   </header>
   <form>
-    <button id="btnRec">
+    <button id="liRecordButton">
       <img src="./img/record.svg" />
-      Grabar
+      <span>
+        Grabar
+      </span>
     </button>
-    <button id="btnPlay">
+    <button id="liPlayButton">
       <img src="./img/play.svg" />
-      Escuchar
+      <span>
+        Escuchar
+      </span>
     </button>
-    <button id="btnUpload">
+    <button id="liUploadButton">
       <img src="./img/upload.svg" />
-      Guardar
+      <span>
+        Guardar
+      </span>
     </button>
   </form>
-  <div id="audioList">
-    <ul>
+  <div>
+    <ul id="audioList">
 
     </ul>
   </div>
   <footer>
-    Sistemas Web (2023-2024)
+    <p>
+      Sistemas Web (2023-2024)
+    </p>
   </footer>
 </section>
 

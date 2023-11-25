@@ -1,7 +1,7 @@
 import { recordFn } from './recordButton.js';
 import { playFn } from './playButton.js';
 import { uploadFn } from './uploadButton.js';
-import { v4 } from '../utils/v4.js';
+import v4 from '../utils/uuid/v4.js';
 
 class App {
     constructor(audio, blob, state) {
@@ -9,7 +9,7 @@ class App {
         this.blob = blob;
         this.state = state;
         this.audioChunks = [];
-        if (!localStorage.getItem("uuid")) localStorage.setItem("uuid", uuidv4()); 
+        if (!localStorage.getItem("uuid")) localStorage.setItem("uuid", v4()); 
         this.uuid = localStorage.getItem("uuid");
     }
 
@@ -115,17 +115,65 @@ function main() {
     const liRecordButton = document.getElementById('liRecordButton');
     const liPlayButton = document.getElementById('liPlayButton');
     const liUploadButton = document.getElementById('liUploadButton');
-    liRecordButton.innerHTML = recordFn();
-    liPlayButton.innerHTML = playFn();
-    liUploadButton.innerHTML = uploadFn();
+    
+    liRecordButton.onclick = recordFn();
+    liPlayButton.onclick = playFn();
+    liUploadButton.onclick = uploadFn();
 
-    fetch('../api/list').then(r => {
-        // PENDIENTE
+    moment.locale('es');
+
+    fetch('../api/list/index.html').then(r=>r.json()).then(r => {
+        r.files.forEach(audio => {
+            console.log(audio);
+            introducirAudio(audio.filename, audio.date);
+        });
     })
 
+    console.log('hola')
+
     fetch(`../api/delete/${uuid}/${filename}`).then(r => {
-        // PENDIENTE
+        
     })
 }
 
+// PENDIENTE DE LLAMAR Y PROBAR
+function introducirAudio(idAudio, fechaAudio){
+    const img1 = document.createElement('image');
+    const spanFecha = document.createElement('span');
+    const img2 = document.createElement('image');
+    
+    img1.src='./img/copy.svg';
+    spanFecha.innerText = moment(fechaAudio).calendar().toLocaleLowerCase();
+    img2.src='./img/trash.svg';
+    img1.onclick = function(){
+        copiarAudio(idAudio);
+    }
+    img2.onclick = function(){
+        borrarAudio(idAudio);
+    }
+
+    const li = document.createElement('li');
+    li.filename = idAudio;
+    li.appendChild(img1);
+    li.appendChild(spanFecha);
+    li.appendChild(img2);
+
+    console.log(li);
+    const listaAudios = document.getElementById('audioList');
+    listaAudios.appendChild(li);
+}
+
+function copiarAudio(idAudio){
+    Clipboard.write(`/play/:${idAudio}`);
+    Snackbar.show({text: 'La URL ha sido correctamente copiada al portapapeles.'});
+}
+
+function borrarAudio(idAudio){
+    fetch(`/api/delete/${app.uuid}/${idAudio}`);
+}
+
+var numAudios = 0;
+const PORT = 3000;
+const URL = `https://localhost:${PORT}`;
+const app = new App();
 window.onload = main;

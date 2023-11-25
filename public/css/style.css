@@ -58,3 +58,7 @@ button:disabled {
 button img {
   margin: 0 0;
 }
+
+#audioList { 
+  list-style-type: none;
+}

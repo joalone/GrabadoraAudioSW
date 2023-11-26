@@ -1,7 +1,7 @@
 import { recordFn  } from './recordButton.js';
 import { playFn } from './playButton.js';
 import { uploadFn } from './uploadButton.js';
-import { addAudioFn } from './liAudio.js';
+import { AudioHandler } from './liAudio.js';
 import v4 from '../utils/uuid/v4.js';
 
 class App {
@@ -15,13 +15,15 @@ class App {
         this.audioChunks = []; // Chunks de datos grabados del audio actual
         this.blob = new Blob(this.audioChunks, { type: 'audio/wav' }); // Último audio grabado
         if (!localStorage.getItem('uuid')) localStorage.setItem('uuid', v4());
-        this.uuid = localStorage.getItem('uuid');
+        this.uuid = localStorage.getItem('uuid'); // Identifica al usuario actual
+        this.audioHandler = null; // Se encargará de añadir audios a la lista
     }
 
     async init() { // Inicializa todo, se debe invocar al cargar la ventana
         const liPlayButton = document.getElementById('liPlayButton');
         const liRecordButton = document.getElementById('liRecordButton');
         const liUploadButton = document.getElementById('liUploadButton');
+        
         this.recordButton = recordFn();
         this.playButton = playFn();
         this.uploadButton = uploadFn();
@@ -32,7 +34,9 @@ class App {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         this.initAudio();
         this.initRecord(stream);
-        this.setState({ isRecording: false, isPlaying: false });
+        this.setState({ isRecording: false, isPlaying: false, isUploaded: false, isDeleting: false });
+        this.audioHandler = new AudioHandler();
+        this.audioHandler.init();
     }
 
     initAudio() { // Inicializa el audio, es llamado por this.init
@@ -52,7 +56,6 @@ class App {
         this.mediaRecorder = new MediaRecorder(stream);
         this.mediaRecorder.ondataavailable = (event) =>  this.record(event.data);
         this.mediaRecorder.onstop = this.loadBlob;
-        console.log(this.mediaRecorder);
     }
 
     loadBlob() {
@@ -60,17 +63,13 @@ class App {
         this.audio.src = URL.createObjectURL(this.blob);
     }
 
-    deleteAudio() {
-        this.audioChunks = [];
-        this.loadBlock();
-    }
-
     record(data) {
         this.audioChunks.push(data);
     }
 
     startRecording() {
-        this.deleteAudio();
+        this.audioChunks = [];
+        this.loadBlob();
         this.mediaRecorder.start();
         this.isRecording = true;
     }
@@ -150,8 +149,5 @@ class App {
 
 }
 
-var numAudios = 0;
-const PORT = 3000;
-const URL = `https://localhost:${PORT}`;
 const app = new App();
 window.onload = app.init();

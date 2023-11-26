@@ -71,22 +71,22 @@ class App {
         this.audioChunks = [];
         this.loadBlob();
         this.mediaRecorder.start();
-        this.isRecording = true;
+        this.setState({ isRecording: true });
     }
 
     stopRecording() {
         this.mediaRecorder.stop();
-        this.isRecording = false;
+        this.setState({ isRecording: false });
     }
 
     playAudio() {
-        this.audioPlayer.playAudio();
-        this.isPlaying = true;
+        this.audio.playAudio();
+        this.setState({ isPlaying: true });
     }
 
     stopAudio() {
-        this.audioPlayer.stopAudio();
-        this.isPlaying = false;
+        this.audio.stopAudio();
+        this.setState({ isPlaying: false });
     }
 
     setState(state) {
@@ -105,24 +105,24 @@ class App {
             this.playButton.disabled = false;
             this.uploadButton.disabled = false;
             this.recordButton.children[1].innerText = 'Parar ()';
-            this.recordButton.onclick = this.stopRecording;
+            this.recordButton.onclick = () => this.stopRecording();
         } else {  
             this.recordButton.children[1].innerText = 'Grabar ()';
-            this.recordButton.onclick = this.startRecording;
+            this.recordButton.onclick = () => this.startRecording();
         }
         if(this.isPlaying) {
             let playTime = this.toMinSeconds(this.audioPlayer);
             this.playButton.children[1].innerText = `Parar (${playTime})`;
-            this.playButton.onclick = this.stopAudio;
+            this.playButton.onclick = () => this.stopAudio();
         } else {
             this.playButton.children[1].innerText = 'Escuchar (0:00)';
-            this.playButton.onclick = this.playAudio;
+            this.playButton.onclick = () => this.playAudio();
         }
     }
 
     toMinSeconds(time){
-        seconds = time % 60;
-        minutes = time / 60;
+        let seconds = time % 60;
+        let minutes = time / 60;
         return `${minutes}:${seconds}`;
     }
 

@@ -1,86 +1,138 @@
-import { recordFn } from './recordButton.js';
+import { recordFn  } from './recordButton.js';
 import { playFn } from './playButton.js';
 import { uploadFn } from './uploadButton.js';
+import { addAudioFn } from './liAudio.js';
 import v4 from '../utils/uuid/v4.js';
 
 class App {
-    constructor(audio, blob, state) {
-        this.audio = audio;
-        this.blob = blob;
-        this.state = state;
-        this.audioChunks = [];
-        if (!localStorage.getItem("uuid")) localStorage.setItem("uuid", v4()); 
-        this.uuid = localStorage.getItem("uuid");
+    constructor() { // Constructor
+        this.audio = null; // Reproductor de audio, se inicializa en initAudio
+        this.mediaRecorder = null; // Grabador de audio, se inicializa en initRecord
+        this.recordButton = null; // Botón de grabar del formulario, se inicializa en init
+        this.playButton = null; // Botón de reproducir del formulario, se inicializa en init
+        this.uploadButton = null; // Botón de subir del formulario, se inicializa en init
+        this.state = []; // Estado, nos interesa isRecording e isPlaying
+        this.audioChunks = []; // Chunks de datos grabados del audio actual
+        this.blob = new Blob(this.audioChunks, { type: 'audio/wav' }); // Último audio grabado
+        if (!localStorage.getItem('uuid')) localStorage.setItem('uuid', v4());
+        this.uuid = localStorage.getItem('uuid');
     }
 
-    async init() {
+    async init() { // Inicializa todo, se debe invocar al cargar la ventana
+        const liPlayButton = document.getElementById('liPlayButton');
+        const liRecordButton = document.getElementById('liRecordButton');
+        const liUploadButton = document.getElementById('liUploadButton');
+        this.recordButton = recordFn();
+        this.playButton = playFn();
+        this.uploadButton = uploadFn();
+        liRecordButton.appendChild(this.recordButton);
+        liPlayButton.appendChild(this.playButton);
+        liUploadButton.appendChild(this.uploadButton);
+        moment.locale('es');
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        initaudio();
-        initRecord(stream);
+        this.initAudio();
+        this.initRecord(stream);
+        this.setState({ isRecording: false, isPlaying: false });
     }
 
-    initAudio() {
-        this.audio = Audio();
-        this.audio.onloadedmetadata = function () {
-            console.log("Metadata cargada");
-        };
-        this.audio.ondurationchange = function () {
-            console.log("Duración del audio ha cambiado ");
-        };
-        this.audio.ontimeupdate = function () {
-            setState();
-            console.log("Tiempo de reproducción actual");
-        };
-        this.audio.onended = function () {
-            console.log("Reproducción del audio ha finalizado");
-        };
+    initAudio() { // Inicializa el audio, es llamado por this.init
+        this.audio = new Audio();
+        this.audio.hidden = true;
+        document.body.appendChild(this.audio);
+        this.audio.onloadedmetadata = () => console.log('Metadatos del audio cargados.');
+        this.audio.ondurationchange = () => console.log('Duración del audio cambiada.');
+        this.audio.onended = () => console.log('Reproducción del audio finalizada.');
+        this.audio.ontimeupdate = () => {
+            console.log('Tiempo de reproducción actualizado.');
+            this.setState();
+        }
+    }
+
+    initRecord(stream) { // Inicializa la grabadora, es llamado por this.init
+        this.mediaRecorder = new MediaRecorder(stream);
+        this.mediaRecorder.ondataavailable = (event) =>  this.record(event.data);
+        this.mediaRecorder.onstop = this.loadBlob;
+        console.log(this.mediaRecorder);
     }
 
     loadBlob() {
-        const audioUrl = URL.createObjectURL(this.blob);
-        const audioPlayer = document.getElementById('audioPlayer');
-        audioPlayer.src = audioUrl;
+        this.blob = new Blob(this.audioChunks, { type: 'audio/wav' });
+        this.audio.src = URL.createObjectURL(this.blob);
     }
 
-    initRecord(stream) {
-        const mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-                console.log('Datos disponibles:', event.data);
-            }
-        }
-        mediaRecorder.onstop = () => {
-            console.log('Grabación detenida');
-            this.blob = new Blob(this.audioChunks, { type: 'audio/wav' });
-            loadBlob();
-        };
-
+    deleteAudio() {
+        this.audioChunks = [];
+        this.loadBlock();
     }
 
-    record() {
-        // PENDIENTE
+    record(data) {
+        this.audioChunks.push(data);
+    }
+
+    startRecording() {
+        this.deleteAudio();
+        this.mediaRecorder.start();
+        this.isRecording = true;
     }
 
     stopRecording() {
-        // PENDIENTE
+        this.mediaRecorder.stop();
+        this.isRecording = false;
     }
 
     playAudio() {
-        const audioPlayer = document.getElementById('audioPlayer');
-        audioPlayer.playAudio();
+        this.audioPlayer.playAudio();
+        this.isPlaying = true;
     }
 
     stopAudio() {
-        const audioPlayer = document.getElementById('audioPlayer');
-        audioPlayer.stopAudio();
+        this.audioPlayer.stopAudio();
+        this.isPlaying = false;
+    }
+
+    setState(state) {
+        this.state = Object.assign({}, this.state, state);
+        this.render();
+    }
+
+    render() {
+        var isRecording = this.state.isRecording;
+        var isPlaying = this.state.isPlaying;
+        if(isRecording && isPlaying){
+            this.setState({ isPlaying: false });
+            return;
+        }
+        if(this.isRecording) {
+            this.playButton.disabled = false;
+            this.uploadButton.disabled = false;
+            this.recordButton.children[1].innerText = 'Parar ()';
+            this.recordButton.onclick = this.stopRecording;
+        } else {  
+            this.recordButton.children[1].innerText = 'Grabar ()';
+            this.recordButton.onclick = this.startRecording;
+        }
+        if(this.isPlaying) {
+            let playTime = this.toMinSeconds(this.audioPlayer);
+            this.playButton.children[1].innerText = `Parar (${playTime})`;
+            this.playButton.onclick = this.stopAudio;
+        } else {
+            this.playButton.children[1].innerText = 'Escuchar (0:00)';
+            this.playButton.onclick = this.playAudio;
+        }
+    }
+
+    toMinSeconds(time){
+        seconds = time % 60;
+        minutes = time / 60;
+        return `${minutes}:${seconds}`;
     }
 
     upload() {
         this.setState({ uploading: true });
         const body = new FormData();
-        body.append("recording", this.blob);
-        fetch("/api/upload/" + this.uuid, {
-            method: "POST",
+        body.append('recording', this.blob);
+        fetch('/api/upload/' + this.uuid, {
+            method: 'POST',
             body,
         })
             .then((res) => res.json())
@@ -96,84 +148,10 @@ class App {
             });
     }
 
-    deleteFile() {
-        // PENDIENTE
-    }
-
-    setState(state) {
-        this.state = Object.assign({}, this.state, state);
-        this.render();
-    }
-
-    render() {
-        // PENDIENTE
-    }
-
-}
-
-function main() {
-    const liRecordButton = document.getElementById('liRecordButton');
-    const liPlayButton = document.getElementById('liPlayButton');
-    const liUploadButton = document.getElementById('liUploadButton');
-    
-    liRecordButton.onclick = recordFn();
-    liPlayButton.onclick = playFn();
-    liUploadButton.onclick = uploadFn();
-
-    moment.locale('es');
-
-    fetch('../api/list/index.html').then(r=>r.json()).then(r => {
-        r.files.forEach(audio => {
-            console.log(audio);
-            introducirAudio(audio.filename, audio.date);
-        });
-    })
-
-    console.log('hola')
-
-    fetch(`../api/delete/${uuid}/${filename}`).then(r => {
-        
-    })
-}
-
-// PENDIENTE DE LLAMAR Y PROBAR
-function introducirAudio(idAudio, fechaAudio){
-    const img1 = document.createElement('image');
-    const spanFecha = document.createElement('span');
-    const img2 = document.createElement('image');
-    
-    img1.src='./img/copy.svg';
-    spanFecha.innerText = moment(fechaAudio).calendar().toLocaleLowerCase();
-    img2.src='./img/trash.svg';
-    img1.onclick = function(){
-        copiarAudio(idAudio);
-    }
-    img2.onclick = function(){
-        borrarAudio(idAudio);
-    }
-
-    const li = document.createElement('li');
-    li.filename = idAudio;
-    li.appendChild(img1);
-    li.appendChild(spanFecha);
-    li.appendChild(img2);
-
-    console.log(li);
-    const listaAudios = document.getElementById('audioList');
-    listaAudios.appendChild(li);
-}
-
-function copiarAudio(idAudio){
-    Clipboard.write(`/play/:${idAudio}`);
-    Snackbar.show({text: 'La URL ha sido correctamente copiada al portapapeles.'});
-}
-
-function borrarAudio(idAudio){
-    fetch(`/api/delete/${app.uuid}/${idAudio}`);
 }
 
 var numAudios = 0;
 const PORT = 3000;
 const URL = `https://localhost:${PORT}`;
 const app = new App();
-window.onload = main;
+window.onload = app.init();

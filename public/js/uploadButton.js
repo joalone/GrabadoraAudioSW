@@ -1,5 +1,13 @@
 function uploadFn(){
-    console.log('Upload');
+    const uploadButton = document.createElement('button');
+    const imageBtn = document.createElement('img');
+    const spanBtn = document.createElement('span');
+    imageBtn.src = './img/upload.svg';
+    spanBtn.innerText = 'Grabar';
+    uploadButton.disabled = true;
+    uploadButton.appendChild(imageBtn);
+    uploadButton.appendChild(spanBtn);
+    return uploadButton;
 }
 
 export { uploadFn };

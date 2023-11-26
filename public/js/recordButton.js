@@ -1,24 +1,12 @@
 function recordFn(){
-    console.log('Record');
+    const recordButton = document.createElement('button');
+    const imageBtn = document.createElement('img');
+    const spanBtn = document.createElement('span');
+    imageBtn.src = './img/record.svg';
+    spanBtn.innerText = 'Grabar';
+    recordButton.appendChild(imageBtn);
+    recordButton.appendChild(spanBtn);
+    return recordButton;
 }
-
-var min = 5;
-var seg = 0;
-
-var intContador = setInterval(() => {  
-    if(seg==0) min--;
-    seg = (seg + 59) % 60;
-    // Cambiar texto
-    if (min<=0 && seg<=0) {
-        min=0;
-        seg=0;
-        clearInterval(intContador);
-        // Cambiar texto
-    }
-}, 1000);
-
-
-
-
 
 export { recordFn };

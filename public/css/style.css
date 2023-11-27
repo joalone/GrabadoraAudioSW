@@ -27,12 +27,13 @@ section {
 
 header,
 footer,
-form {
+menu {
   padding: 5px;
 }
 
+
 h1 {
-  font-size: 20px;
+  font-size: 25px;
 }
 
 ul {
@@ -40,45 +41,54 @@ ul {
   padding-left: 0;
 }
 
-form ul button {
+menu button,
+#ulAudio li {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
+}
+
+ul li * {
+  flex: 1;
+}
+
+menu button {
   width: 80%;
   margin: 5px auto;
-  border: 0px;
+  border: 2px black solid;
   border-radius: 10px;
   padding: 5px;
 
   color: beige;
   font-size: 15px;
   font-weight: bold;
-
-  border: 2px black solid;
 }
 
-form ul button:enabled {
+button:enabled {
   background-color: #F50158;
   cursor: pointer;
 }
 
-form ul button:disabled {
+button:disabled {
   background-color: #616161;
   cursor: arrow;
 }
 
-form ul button span,
-form ul button img {
-  flex: 1;
-}
-
-button span {
-  margin-top: 5px;
+menu span {
   text-align: left;
+  margin-top: 5px;
 }
 
-button img {
+#ulAudio span {
+  text-align: center;
+}
+
+#ulAudio li {
+  margin: 5px;
+}
+
+li img {
   margin: 0 0;
   width: 25px;
   height: 25px;

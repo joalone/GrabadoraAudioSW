@@ -3,7 +3,7 @@ function uploadFn(){
     const imageBtn = document.createElement('img');
     const spanBtn = document.createElement('span');
     imageBtn.src = './img/upload.svg';
-    spanBtn.innerText = 'Grabar';
+    spanBtn.innerText = 'Subir';
     uploadButton.disabled = true;
     uploadButton.appendChild(imageBtn);
     uploadButton.appendChild(spanBtn);

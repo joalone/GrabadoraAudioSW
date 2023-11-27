@@ -7,7 +7,6 @@ class AudioHandler {
 
     async init(){
         this.ulAudio = document.getElementById('ulAudio');
-        console.log('he llegado')
         fetch('../api/list/index.html').then(r => r.json()).then(r => {
             r.files.forEach(audio => {
                 this.addAudioFn(audio.filename, audio.date);
@@ -23,7 +22,7 @@ class AudioHandler {
         spanFecha.innerText = moment(fechaAudio).calendar().toLocaleLowerCase();
         img2.src = './img/trash.svg';
         img1.onclick = () => this.copyAudio(idAudio);
-        img2.onclick = () => this.copy(idAudio);
+        img2.onclick = () => this.deleteAudio(idAudio);
         
         const li = document.createElement('li');
         li.filename = idAudio;
@@ -47,7 +46,7 @@ class AudioHandler {
 
     deleteAudio(idAudio){
         fetch(`../api/delete/${this.uuid}/${idAudio}`).then(r => {
-            console.log('Se hace lo que se puede');
+            console.log('Hecha petición de borrado.');
         });
     }
 }

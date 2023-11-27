@@ -17,6 +17,8 @@ class App {
         if (!localStorage.getItem('uuid')) localStorage.setItem('uuid', v4());
         this.uuid = localStorage.getItem('uuid'); // Identifica al usuario actual
         this.audioHandler = null; // Se encargará de añadir audios a la lista
+        this.recordingTime = MAX_RECORD_TIME; // Para controlar que no exceda el límite
+        this.recordingInterval = null; // Para parar el contador de tiempo
     }
 
     async init() { // Inicializa todo, se debe invocar al cargar la ventana
@@ -30,11 +32,14 @@ class App {
         liRecordButton.appendChild(this.recordButton);
         liPlayButton.appendChild(this.playButton);
         liUploadButton.appendChild(this.uploadButton);
-        moment.locale('es');
+        
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         this.initAudio();
         this.initRecord(stream);
-        this.setState({ isRecording: false, isPlaying: false, isUploaded: false, isDeleting: false });
+
+        this.setState({ isRecording: false, isPlaying: false, recordCache: false });
+
+        moment.locale('es');
         this.audioHandler = new AudioHandler();
         this.audioHandler.init();
     }
@@ -45,17 +50,20 @@ class App {
         document.body.appendChild(this.audio);
         this.audio.onloadedmetadata = () => console.log('Metadatos del audio cargados.');
         this.audio.ondurationchange = () => console.log('Duración del audio cambiada.');
-        this.audio.onended = () => console.log('Reproducción del audio finalizada.');
         this.audio.ontimeupdate = () => {
             console.log('Tiempo de reproducción actualizado.');
             this.setState();
         }
+        this.audio.onended = () => {
+            console.log('Reproducción del audio finalizada.');
+            this.stopAudio();
+        };
     }
 
     initRecord(stream) { // Inicializa la grabadora, es llamado por this.init
         this.mediaRecorder = new MediaRecorder(stream);
         this.mediaRecorder.ondataavailable = (event) =>  this.record(event.data);
-        this.mediaRecorder.onstop = this.loadBlob;
+        this.mediaRecorder.onstop = () => this.loadBlob();
     }
 
     loadBlob() {
@@ -72,20 +80,32 @@ class App {
         this.loadBlob();
         this.mediaRecorder.start();
         this.setState({ isRecording: true });
+        this.recordingTime = MAX_RECORD_TIME;
+        this.recordingInterval = setInterval(() => {
+            this.recordingTime--;
+            if(this.recordingTime <= 0) {
+                this.stopRecording();
+            } else {
+                this.setState();
+            }
+        }, 1000);
     }
 
     stopRecording() {
         this.mediaRecorder.stop();
-        this.setState({ isRecording: false });
+        clearInterval(this.recordingInterval);
+        this.recordingTime = MAX_RECORD_TIME;
+        this.setState({ isRecording: false, recordCache: true });
     }
 
     playAudio() {
-        this.audio.playAudio();
+        this.audio.play();
         this.setState({ isPlaying: true });
     }
 
     stopAudio() {
-        this.audio.stopAudio();
+        this.audio.pause();
+        this.audio.currentTime = 0;
         this.setState({ isPlaying: false });
     }
 
@@ -101,28 +121,38 @@ class App {
             this.setState({ isPlaying: false });
             return;
         }
-        if(this.isRecording) {
-            this.playButton.disabled = false;
-            this.uploadButton.disabled = false;
-            this.recordButton.children[1].innerText = 'Parar ()';
+        let recordTime = this.#toMinSeconds(this.recordingTime);
+        if(this.state.isRecording) {
+            this.playButton.disabled = true;
+            this.uploadButton.disabled = true;
+            this.recordButton.children[1].innerText = `Parar (${recordTime})`;
             this.recordButton.onclick = () => this.stopRecording();
+            this.recordButton.children[0].src = './img/stop.svg';
         } else {  
-            this.recordButton.children[1].innerText = 'Grabar ()';
+            if(this.state.recordCache){
+                this.playButton.disabled = false;
+                this.uploadButton.disabled = false;
+                this.recordButton.children[0].src = './img/arrow-clockwise.svg';
+            }
+            this.recordButton.children[1].innerText = `Grabar (${recordTime})`;
             this.recordButton.onclick = () => this.startRecording();
         }
-        if(this.isPlaying) {
-            let playTime = this.toMinSeconds(this.audioPlayer);
+        let playTime = this.#toMinSeconds(this.audio.currentTime) || 0;
+        if(this.state.isPlaying) {
             this.playButton.children[1].innerText = `Parar (${playTime})`;
             this.playButton.onclick = () => this.stopAudio();
+            this.playButton.children[0].src = './img/stop.svg';
         } else {
-            this.playButton.children[1].innerText = 'Escuchar (0:00)';
+            this.playButton.children[1].innerText = `Escuchar (${playTime})`;
             this.playButton.onclick = () => this.playAudio();
+            this.playButton.children[0].src = './img/play.svg';
         }
     }
 
-    toMinSeconds(time){
-        let seconds = time % 60;
-        let minutes = time / 60;
+    #toMinSeconds(time){
+        let minutes = Math.floor(time/60);
+        let seconds = ("00" + (Math.floor(time)%60)).slice(-2);
+        
         return `${minutes}:${seconds}`;
     }
 
@@ -149,5 +179,6 @@ class App {
 
 }
 
+const MAX_RECORD_TIME = 300; // En segundos
 const app = new App();
 window.onload = app.init();

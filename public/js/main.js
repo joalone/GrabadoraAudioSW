@@ -1,19 +1,19 @@
 import { recordFn  } from './recordButton.js';
 import { playFn } from './playButton.js';
 import { uploadFn } from './uploadButton.js';
-import { AudioHandler } from './liAudio.js';
+import { AudioHandler } from './audioHandler.js';
 import v4 from '../utils/uuid/v4.js';
 
 class App {
     constructor() { // Constructor
-        this.audio = null; // Reproductor de audio, se inicializa en initAudio
+        this.audio = new Audio(); // Reproductor de audio, se inicializa en initAudio
         this.mediaRecorder = null; // Grabador de audio, se inicializa en initRecord
         this.recordButton = null; // Botón de grabar del formulario, se inicializa en init
         this.playButton = null; // Botón de reproducir del formulario, se inicializa en init
         this.uploadButton = null; // Botón de subir del formulario, se inicializa en init
         this.state = []; // Estado, nos interesa isRecording e isPlaying
         this.audioChunks = []; // Chunks de datos grabados del audio actual
-        this.blob = new Blob(this.audioChunks, { type: 'audio/wav' }); // Último audio grabado
+        this.blob = new Blob(this.audioChunks, { type: 'audio/ogg' }); // Último audio grabado
         if (!localStorage.getItem('uuid')) localStorage.setItem('uuid', v4());
         this.uuid = localStorage.getItem('uuid'); // Identifica al usuario actual
         this.audioHandler = null; // Se encargará de añadir audios a la lista
@@ -21,35 +21,36 @@ class App {
         this.recordingInterval = null; // Para parar el contador de tiempo
     }
 
-    async init() { // Inicializa todo, se debe invocar al cargar la ventana
+    async init() { // Inicializa todo, se debe llamar al cargar la ventana
         const liPlayButton = document.getElementById('liPlayButton');
         const liRecordButton = document.getElementById('liRecordButton');
         const liUploadButton = document.getElementById('liUploadButton');
-        
         this.recordButton = recordFn();
         this.playButton = playFn();
         this.uploadButton = uploadFn();
         liRecordButton.appendChild(this.recordButton);
         liPlayButton.appendChild(this.playButton);
         liUploadButton.appendChild(this.uploadButton);
-        
+
+        moment.locale('es');
+        this.audioHandler = new AudioHandler(this.uuid);
+        this.audioHandler.init();
+
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         this.initAudio();
         this.initRecord(stream);
 
         this.setState({ isRecording: false, isPlaying: false, recordCache: false });
-
-        moment.locale('es');
-        this.audioHandler = new AudioHandler();
-        this.audioHandler.init();
     }
 
     initAudio() { // Inicializa el audio, es llamado por this.init
-        this.audio = new Audio();
         this.audio.hidden = true;
         document.body.appendChild(this.audio);
         this.audio.onloadedmetadata = () => console.log('Metadatos del audio cargados.');
-        this.audio.ondurationchange = () => console.log('Duración del audio cambiada.');
+        this.audio.ondurationchange = () => {
+            console.log('Duración del audio cambiada.');
+            this.setState();
+        }
         this.audio.ontimeupdate = () => {
             console.log('Tiempo de reproducción actualizado.');
             this.setState();
@@ -62,17 +63,13 @@ class App {
 
     initRecord(stream) { // Inicializa la grabadora, es llamado por this.init
         this.mediaRecorder = new MediaRecorder(stream);
-        this.mediaRecorder.ondataavailable = (event) =>  this.record(event.data);
+        this.mediaRecorder.ondataavailable = event =>  this.audioChunks.push(event.data);
         this.mediaRecorder.onstop = () => this.loadBlob();
     }
 
     loadBlob() {
-        this.blob = new Blob(this.audioChunks, { type: 'audio/wav' });
+        this.blob = new Blob(this.audioChunks, { type: 'audio/ogg' });
         this.audio.src = URL.createObjectURL(this.blob);
-    }
-
-    record(data) {
-        this.audioChunks.push(data);
     }
 
     startRecording() {
@@ -115,13 +112,15 @@ class App {
     }
 
     render() {
-        var isRecording = this.state.isRecording;
-        var isPlaying = this.state.isPlaying;
+        let isRecording = this.state.isRecording;
+        let isPlaying = this.state.isPlaying;
         if(isRecording && isPlaying){
             this.setState({ isPlaying: false });
             return;
         }
-        let recordTime = this.#toMinSeconds(this.recordingTime);
+        let recordTime = this.toMinSeconds(this.recordingTime);
+        let playTime = this.toMinSeconds(this.audio.duration - this.audio.currentTime || 0);
+        let duration = this.toMinSeconds(this.audio.duration || 0);
         if(this.state.isRecording) {
             this.playButton.disabled = true;
             this.uploadButton.disabled = true;
@@ -137,21 +136,20 @@ class App {
             this.recordButton.children[1].innerText = `Grabar (${recordTime})`;
             this.recordButton.onclick = () => this.startRecording();
         }
-        let playTime = this.#toMinSeconds(this.audio.currentTime) || 0;
         if(this.state.isPlaying) {
             this.playButton.children[1].innerText = `Parar (${playTime})`;
             this.playButton.onclick = () => this.stopAudio();
             this.playButton.children[0].src = './img/stop.svg';
         } else {
-            this.playButton.children[1].innerText = `Escuchar (${playTime})`;
+            this.playButton.children[1].innerText = `Escuchar (${duration})`;
             this.playButton.onclick = () => this.playAudio();
             this.playButton.children[0].src = './img/play.svg';
         }
     }
 
-    #toMinSeconds(time){
+    toMinSeconds(time){
         let minutes = Math.floor(time/60);
-        let seconds = ("00" + (Math.floor(time)%60)).slice(-2);
+        let seconds = ("0" + (Math.floor(time)%60)).slice(-2);
         
         return `${minutes}:${seconds}`;
     }
@@ -176,7 +174,6 @@ class App {
                 this.setState({ error: true });
             });
     }
-
 }
 
 const MAX_RECORD_TIME = 300; // En segundos

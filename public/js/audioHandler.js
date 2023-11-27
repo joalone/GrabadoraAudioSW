@@ -1,8 +1,8 @@
 class AudioHandler {
-    constructor(uid){
+    constructor(uuid){
         this.ulAudio = null;
         this.numAudios = 0;
-        this.uid = uid;
+        this.uuid = uuid;
     }
 
     async init(){

@@ -28,6 +28,7 @@ class App {
         this.recordButton = recordFn();
         this.playButton = playFn();
         this.uploadButton = uploadFn();
+        this.uploadButton.onclick = ()=>this.uploadAudio();
         liRecordButton.appendChild(this.recordButton);
         liPlayButton.appendChild(this.playButton);
         liUploadButton.appendChild(this.uploadButton);
@@ -174,6 +175,21 @@ class App {
                 this.setState({ error: true });
             });
     }
+
+    async uploadAudio() {
+        fetch(`/api/upload/${this.uuid}`, 
+        { 
+            method: 'POST',
+            /*
+            headers: {
+                "Content-Type": "multipart/form-data", 
+
+              },
+            */
+            body: this.blob 
+        });
+    }
+
 }
 
 const MAX_RECORD_TIME = 300; // En segundos

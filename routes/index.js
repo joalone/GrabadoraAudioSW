@@ -1,14 +1,32 @@
 var express = require('express');
 var router = express.Router();
+var session = require('express-session');
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+const sess = {
+  secret: 'clave secreta',
+  resave: true,
+  saveUninitialized: true,
+  cookie: {
+    maxAge: 3600000,
+  }
+}
+
+router.use(session(sess));
+
+router.post('/login',(req,res) => {
+  req.session.name = req.body.name;
+  res.end('done');
+});
+
+router.get('/main', function(req, res, next){
+  res.render("main");
 });
 
 router.get('/', function(req, res, next) {
-  const playMode = new URLSearchParams(window.location.search).get("play");
-  res.redirect('/api/play/'+IDFichero);
+  if(req.session.name) {
+    return res.redirect('/main');
+  }
+  res.render('login');
 });
 
 module.exports = router;

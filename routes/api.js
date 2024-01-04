@@ -13,8 +13,14 @@ const handleList = async (name) => {
   });
 };
 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, '/recordings')
+  }
+})
+
 const upload = multer({
-  dest: './recordings/',
+  storage: storage,
   limits: {
     fileSize: 2500000,
   },
@@ -27,6 +33,11 @@ const upload = multer({
   }
   */
 }).single("recording"); 
+
+router.get('/', function(req, res, next) {
+  const playMode = new URLSearchParams(window.location.search).get("play");
+  res.redirect('/api/play/'+IDFichero);
+});
 
 router.get('/list/:name', function (req, res, next) {
   handleList(req.params.name)

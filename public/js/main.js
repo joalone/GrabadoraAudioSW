@@ -177,17 +177,19 @@ class App {
     }
 
     async uploadAudio() {
+
+        
         fetch(`/api/upload/${this.uuid}`, 
         { 
             method: 'POST',
-            /*
-            headers: {
-                "Content-Type": "multipart/form-data", 
-
-              },
-            */
             body: this.blob 
         });
+    }
+
+    async uploadAudio() { 
+        const formData = new FormData(); 
+        formData.append('audioFile', this.blob); 
+        await fetch(`/api/upload/${this.uuid}`, { method: 'POST', body: formData }); 
     }
 
 }

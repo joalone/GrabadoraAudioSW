@@ -9,8 +9,8 @@ class AudioHandler {
         this.ulAudio = document.getElementById('ulAudio');
         fetch(`../api/list/${this.uuid}`)
             .then(r => r.json())
-            .then(r => {
-                r.files.forEach(audio => {
+            .then(r => {console.log(r);
+                r.forEach(audio => {
                     this.addAudioFn(audio.filename, audio.date);
                 });
             });

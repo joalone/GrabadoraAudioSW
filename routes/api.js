@@ -4,13 +4,39 @@ var mongojs = require('mongojs');
 var db = mongojs(dirdb, ['recordings']);
 var multer = require('multer');
 var router = express.Router();
-
+/*
 const handleList = async (name) => {
   db.recordings.find({ name: name }, (err, doc) => {
     if (!err) {if(doc){
-                return doc.sort(r => -r.date).slice(0, 5)
+                var json=JSON.parse('{"name":"asdc"}');
+                console.log(json);
+                console.log(JSON.stringify(doc));
+                console.log(doc.sort(r => -r.date).slice(0, 5));
+                console.log('');
+                var jsonr =JSON.stringify({data:doc.sort(r => -r.date).slice(0, 5)});
+                console.log(jsonr);
+                return JSON.stringify({data:doc.sort(r => -r.date).slice(0, 5)});
                };
     }
+  });
+};
+*/
+const handleList = async (name) => {
+  return new Promise((resolve, reject) => {
+    db.recordings.find({ name: name }, (err, doc) => {
+      if (err) {
+        reject(err);
+      } else {
+        if (doc) {
+          var sortedData = doc.sort((r1, r2) => r2.date - r1.date).slice(0, 5);
+          var jsonData = { data: sortedData };
+          console.log(jsonData);
+          resolve(jsonData);
+        } else {
+          resolve({ data: [] });
+        }
+      }
+    });
   });
 };
 
@@ -38,9 +64,24 @@ router.get('/', function(req, res, next) {
   res.redirect('/api/play/'+IDFichero);
 });
 
+/*
 router.get('/list/:name', function (req, res, next) {
   handleList(req.params.name)
-    .then(r => res.send(r));
+    .then(r=>{console.log('rapido');r.json()})
+    .then(r => {res.send(r)});
+});
+*/
+
+router.get('/list/:name', async function (req, res, next) {
+  try {
+    const result = await handleList(req.params.name);
+    console.log('rapido', result.data);
+    res.send(result.data);
+  } catch (error) {
+    // Handle errors here
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
 router.post('/logout', function (req, res, next) {

@@ -7,15 +7,16 @@ var router = express.Router();
 
 const handleList = async (name) => {
   db.recordings.find({ name: name }, (err, doc) => {
-    if (!err) {
-      return doc.sort(r => -r.date).slice(0, 5);
+    if (!err) {if(doc){
+                return doc.sort(r => -r.date).slice(0, 5)
+               };
     }
   });
 };
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, '/recordings')
+    cb(null, './recordings')
   }
 })
 
@@ -24,15 +25,13 @@ const upload = multer({
   limits: {
     fileSize: 2500000,
   },
-  /*
   fileFilter: (req, file, cb)  => {
-    if (file.mimetype != 'audio/ogg') {
-      return cb(new Error('Wrong format.'));
+    if (file.mimetype !== 'audio/ogg') {
+      return cb(null,false,new Error('Wrong format.'));
     }
-    cb(error, true);
+    cb(null, true);
   }
-  */
-}).single("recording"); 
+}).single("recordings");
 
 router.get('/', function(req, res, next) {
   const playMode = new URLSearchParams(window.location.search).get("play");
@@ -41,21 +40,25 @@ router.get('/', function(req, res, next) {
 
 router.get('/list/:name', function (req, res, next) {
   handleList(req.params.name)
-    .then(r => res.send(JSON.stringify(r)));
+    .then(r => res.send(r));
 });
 
-router.post("/upload/:name", upload, (req, res, next) => {
+router.post('/logout', function (req, res, next) {
+    res.send('');
+});
+
+router.post("/upload/:name",  (req, res, next) => {
   upload(req, res, async (err) => {
     if(!err) {
-      db.recordings.insert({ 
-        name: req.params.name, 
+      db.recordings.insert({
+        name: req.params.name,
         filename: req.file.filename,
-        date: Date.now(), 
+        date: Date.now(),
         accessed: Date.now()
       });
-      handleList(req.params.userId)
-    .then(r => res.send(JSON.stringify(r)));
-    }
+      handleList(req.params.name)
+    .then(r => res.send((r)));
+    }else{console.log(err)}
   })
 });
 

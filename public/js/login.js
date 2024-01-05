@@ -12,7 +12,12 @@ function main() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ name: lblName.value, pass: lblPass.value })
-        }, (data) => { if (data === 'done') { window.location.href = "/main" }; });
+        }).then(r => r.json()).then(r=>{if(r.name===lblName.value)//if (data === 'done')
+                          {window.location.href = "/main" }else{console.log('Usuario desconocido');
+                                                                const text = document.createElement('UD');
+                                                                text.innerText='Usuario desconocido'
+                                                                document.body.appendChild(text)} })
+                          //)));
     }
 }
 

@@ -36,6 +36,19 @@ router.post('/login',(req,res) => {
  //res.write('Usuario no existente');
 });
 
+router.post('/register',(req,res) => {
+  var usuario = db.users.findOne({username:req.body.name},
+  function(err,doc){
+  if(err) {
+  console.log(err + 'err');
+  return;
+  } else {if(doc){
+  res.send(JSON.stringify({ name: 'Usuario existente'}));}
+  else{db.users.insert({username:req.body.name,password:req.body.pass,rol:'user'})
+       req.session.name = req.body.name;
+       res.send(JSON.stringify({ name: req.body.name}))}}})
+});
+
 router.get('/main', function(req, res, next){
   res.render("main");
 });
@@ -44,6 +57,11 @@ router.get('/', function(req, res, next) {
   if(req.session.name) {
     return res.redirect('/main');
   }
+  res.render('login');
+});
+
+router.get('/logout', function(req, res, next) {
+  req.session.name=null;
   res.render('login');
 });
 

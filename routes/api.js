@@ -4,6 +4,8 @@ var mongojs = require('mongojs');
 var db = mongojs(dirdb, ['recordings']);
 var multer = require('multer');
 var router = express.Router();
+var fs = require('fs');
+const path = require('path');
 /*
 const handleList = async (name) => {
   db.recordings.find({ name: name }, (err, doc) => {
@@ -104,24 +106,38 @@ router.post("/upload/:name",  (req, res, next) => {
 });
 
 router.post("/delete/:name/:filename", async (req, res, next) => {
+  console.log('name:' +req.params.name);
+  console.log('filename:' +req.params.filename);
   db.recordings.remove({ filename: req.params.filename, name: req.params.name });
+  var filepath = `./recordings/${req.params.filename}`;
+  fs.unlink(filepath, (err => {
+    if (err) console.log(err);
+    else {
+      console.log("Deleted file from recordings");
+    }
+  }));
   handleList(req.params.userId)
     .then(r => res.send(JSON.stringify(r)));
 });
 
 router.get("/play/:filename", (req, res, next) => {
-  var filepath = `req.params.filename${req.params.filename}`;
-  if(fs.exists(filepath)){
+  console.log(req.params.filename);
+  var filepath = `./recordings/${req.params.filename}`;
+  console.log(filepath);
+  fs.exists(filepath,(exists)=>{
+  if(exists){
+  console.log('Existe');
     db.recordings.updateOne(
       { filename: req.params.filename }, 
       { $set: { accessed: Date.now() } }
       );
-    res.sendFile(`./recordings/${filename}`);
+    res.sendFile(path.resolve(filepath));
   }else{
-    res.status(404).render('error');
+  console.log('No existe');
+  /*res.status(404).render('error');*/
   }
 });
-
+});
 function cleanup() {
   let tsNow = Date.now();
   db.recordings.find({},(err,doc) => {
@@ -130,9 +146,19 @@ function cleanup() {
     } else {
       let idCaducados = doc.filter(r => tsNow - r.date > 432000).map(r => r.filename);
       db.recordings.remove({filename: { $in: idCaducados } });
-    }
-});
-}
+      idCaducados.forEach(fileaborr=>{
+      var filepath = `./recordings/${fileaborr}`;
+        fs.unlink(filepath, err => {
+          if (err) console.log(err);
+          else {
+            console.log("Deleted file from recordings");
+          }
+        });
+      });
+      }
+    });
+};
+
 
 module.exports.router = router;
 module.exports.cleanup = cleanup;

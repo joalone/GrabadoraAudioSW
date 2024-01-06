@@ -47,10 +47,16 @@ class AudioHandler {
     }
 
     deleteAudio(idAudio) {
-        fetch(`../api/delete/${this.uuid}/${idAudio}`).then(r => {
+        fetch(`../api/delete/${this.uuid}/${idAudio}`, {method: 'POST'}).then(r => {
             console.log('Hecha petición de borrado.');
         });
+        var root=document.getElementById('ulAudio');
+                while( root.firstChild ){
+                  root.removeChild( root.firstChild );
+                }
+                this.audioHandler.init();
     }
+
 
 }
 

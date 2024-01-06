@@ -19,12 +19,14 @@ class App {
         this.audioHandler = null; // Se encargará de añadir audios a la lista
         this.recordingTime = MAX_RECORD_TIME; // Para controlar que no exceda el límite
         this.recordingInterval = null; // Para parar el contador de tiempo
+        this.playCopyButton = null;
     }
 
     async init() { // Inicializa todo, se debe llamar al cargar la ventana
         const liPlayButton = document.getElementById('liPlayButton');
         const liRecordButton = document.getElementById('liRecordButton');
         const liUploadButton = document.getElementById('liUploadButton');
+        this.playCopyButton = document.getElementById('playcopy');
         this.recordButton = recordFn();
         this.playButton = playFn();
         this.uploadButton = uploadFn();
@@ -32,6 +34,8 @@ class App {
         liRecordButton.appendChild(this.recordButton);
         liPlayButton.appendChild(this.playButton);
         liUploadButton.appendChild(this.uploadButton);
+
+        this.playCopyButton.onclick = () => this.playCopyAudio();
 
         moment.locale('es');
         this.audioHandler = new AudioHandler(this.uuid);
@@ -186,11 +190,20 @@ class App {
         });
     }
 
-    async uploadAudio() { 
+    async uploadAudio() {
         const formData = new FormData(); 
-        formData.append('audioFile', this.blob); 
-        await fetch(`/api/upload/${this.uuid}`, { method: 'POST', body: formData }); 
+        formData.append('recordings', this.blob);
+        await fetch(`/api/upload/${this.uuid}`, { method: 'POST', body: formData });
+        var root=document.getElementById('ulAudio');
+        while( root.firstChild ){
+          root.removeChild( root.firstChild );
+        }
+        this.audioHandler.init();
     }
+
+    playCopyAudio(){
+        var name=navigator.clipboard.readText().then((clipText) => {(fetch(`../api${clipText}`).then(r => {console.log('Hecha petición de play.');}))});
+        }
 
 }
 

@@ -1,4 +1,4 @@
-import { recordFn  } from './recordButton.js';
+import { recordFn } from './recordButton.js';
 import { playFn } from './playButton.js';
 import { uploadFn } from './uploadButton.js';
 import { AudioHandler } from './audioHandler.js';
@@ -30,7 +30,7 @@ class App {
         this.recordButton = recordFn();
         this.playButton = playFn();
         this.uploadButton = uploadFn();
-        this.uploadButton.onclick = ()=>this.uploadAudio();
+        this.uploadButton.onclick = () => this.uploadAudio();
         liRecordButton.appendChild(this.recordButton);
         liPlayButton.appendChild(this.playButton);
         liUploadButton.appendChild(this.uploadButton);
@@ -68,7 +68,7 @@ class App {
 
     initRecord(stream) { // Inicializa la grabadora, es llamado por this.init
         this.mediaRecorder = new MediaRecorder(stream);
-        this.mediaRecorder.ondataavailable = event =>  this.audioChunks.push(event.data);
+        this.mediaRecorder.ondataavailable = event => this.audioChunks.push(event.data);
         this.mediaRecorder.onstop = () => this.loadBlob();
     }
 
@@ -85,7 +85,7 @@ class App {
         this.recordingTime = MAX_RECORD_TIME;
         this.recordingInterval = setInterval(() => {
             this.recordingTime--;
-            if(this.recordingTime <= 0) {
+            if (this.recordingTime <= 0) {
                 this.stopRecording();
             } else {
                 this.setState();
@@ -119,21 +119,21 @@ class App {
     render() {
         let isRecording = this.state.isRecording;
         let isPlaying = this.state.isPlaying;
-        if(isRecording && isPlaying){
+        if (isRecording && isPlaying) {
             this.setState({ isPlaying: false });
             return;
         }
         let recordTime = this.toMinSeconds(this.recordingTime);
         let playTime = this.toMinSeconds(this.audio.duration - this.audio.currentTime || 0);
         let duration = this.toMinSeconds(this.audio.duration || 0);
-        if(this.state.isRecording) {
+        if (this.state.isRecording) {
             this.playButton.disabled = true;
             this.uploadButton.disabled = true;
             this.recordButton.children[1].innerText = `Parar (${recordTime})`;
             this.recordButton.onclick = () => this.stopRecording();
             this.recordButton.children[0].src = './img/stop.svg';
-        } else {  
-            if(this.state.recordCache){
+        } else {
+            if (this.state.recordCache) {
                 this.playButton.disabled = false;
                 this.uploadButton.disabled = false;
                 this.recordButton.children[0].src = './img/arrow-clockwise.svg';
@@ -141,7 +141,7 @@ class App {
             this.recordButton.children[1].innerText = `Grabar (${recordTime})`;
             this.recordButton.onclick = () => this.startRecording();
         }
-        if(this.state.isPlaying) {
+        if (this.state.isPlaying) {
             this.playButton.children[1].innerText = `Parar (${playTime})`;
             this.playButton.onclick = () => this.stopAudio();
             this.playButton.children[0].src = './img/stop.svg';
@@ -152,10 +152,10 @@ class App {
         }
     }
 
-    toMinSeconds(time){
-        let minutes = Math.floor(time/60);
-        let seconds = ("0" + (Math.floor(time)%60)).slice(-2);
-        
+    toMinSeconds(time) {
+        let minutes = Math.floor(time / 60);
+        let seconds = ("0" + (Math.floor(time) % 60)).slice(-2);
+
         return `${minutes}:${seconds}`;
     }
 
@@ -182,28 +182,39 @@ class App {
 
     async uploadAudio() {
 
-        
-        fetch(`/api/upload/${this.uuid}`, 
-        { 
-            method: 'POST',
-            body: this.blob 
-        });
+
+        fetch(`/api/upload/${this.uuid}`,
+            {
+                method: 'POST',
+                body: this.blob
+            });
     }
 
     async uploadAudio() {
-        const formData = new FormData(); 
+        const formData = new FormData();
         formData.append('recordings', this.blob);
         await fetch(`/api/upload/${this.uuid}`, { method: 'POST', body: formData });
-        var root=document.getElementById('ulAudio');
-        while( root.firstChild ){
-          root.removeChild( root.firstChild );
+        var root = document.getElementById('ulAudio');
+        while (root.firstChild) {
+            root.removeChild(root.firstChild);
         }
         this.audioHandler.init();
     }
 
-    playCopyAudio(){
-        var name=navigator.clipboard.readText().then((clipText) => {(fetch(`../api${clipText}`).then(r => {console.log('Hecha petición de play.');}))});
-        }
+    playCopyAudio() {
+        var name = navigator.clipboard.readText().then((clipText) => {
+            (fetch(`../api${clipText}`).then(r => 
+                r.blob()
+            ).then(r => {
+                const audio= new Audio();
+                const blobUrl = URL.createObjectURL(r);
+                audio.src = blobUrl;
+                audio.play();
+                audio.addEventListener("ended", ()=> URL.revokeObjectURL(blobUrl));
+            }))
+        });
+
+    }
 
 }
 

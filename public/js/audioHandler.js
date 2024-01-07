@@ -54,10 +54,12 @@ class AudioHandler {
                 while( root.firstChild ){
                   root.removeChild( root.firstChild );
                 }
+                window.location.reload();
                 this.audioHandler.init();
+                
     }
 
-
+    
 }
 
 export { AudioHandler };

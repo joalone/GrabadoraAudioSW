@@ -9,7 +9,7 @@ Este proyecto es una práctica para el curso 2023/24 de la asignatura Sistemas W
 
 - Leire Sesma Ruiz de Gaona.
 
-El proyecto consiste en el desarrollo de una aplicación web para grabar notas de audio. La aplicación se desarrolla usando HTML, CSS y JavaScript con Node.js y Express.js. Para ejecutar la aplicación, una vez descomprimida, desde una terminal debe lanzarse el comando `nodemon start`. La aplicación estará disponible en `localhost:3000`. [Link a GitHub](https://github.com/joalone/GrabadoraAudioSW)
+El proyecto consiste en el desarrollo de una aplicación web para grabar notas de audio. La aplicación se desarrolla usando HTML, CSS y JavaScript con Node.js y Express.js. Para ejecutar la aplicación, una vez descomprimida, desde una terminal debe lanzarse el comando `nodemon start`. La aplicación estará disponible en `localhost:3000`. [Link a GitHub](https://github.com/joalone/GrabadoraAudioSW).
 
 Este segundo entregable implementa el Back-End. Las funcionalidades con las que cuenta en en esta etapa son:
 
@@ -28,7 +28,7 @@ Este segundo entregable implementa el Back-End. Las funcionalidades con las que 
 - [x] Escuchar audio compartido.
 
 
-En la carpeta `bin` está el archivo `index.ejs` que se carga al abrir la página.
+En la carpeta `bin` está el archivo `www` que se carga al abrir la página.
 
 En la carpeta `public/css` están las hojas de estilo que se usan.
 

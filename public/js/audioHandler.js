@@ -37,7 +37,7 @@ class AudioHandler {
     }
 
     copyAudio(idAudio) {
-        navigator.clipboard.writeText(`/play/${idAudio}`);
+        navigator.clipboard.writeText(`localhost:3000/api/play/preparar/${idAudio}`);
         Snackbar.show({
             text: 'La URL ha sido correctamente copiada al portapapeles.',
             pos: 'bottom-center',
@@ -55,11 +55,8 @@ class AudioHandler {
                   root.removeChild( root.firstChild );
                 }
                 window.location.reload();
-                this.audioHandler.init();
-                
+                this.audioHandler.init();    
     }
-
-    
 }
 
 export { AudioHandler };

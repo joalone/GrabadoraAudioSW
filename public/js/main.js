@@ -19,7 +19,7 @@ class App {
         this.audioHandler = null; // Se encargará de añadir audios a la lista
         this.recordingTime = MAX_RECORD_TIME; // Para controlar que no exceda el límite
         this.recordingInterval = null; // Para parar el contador de tiempo
-        this.playCopyButton = null;
+        //this.playCopyButton = null;
     }
 
     async init() { // Inicializa todo, se debe llamar al cargar la ventana
@@ -35,7 +35,7 @@ class App {
         liPlayButton.appendChild(this.playButton);
         liUploadButton.appendChild(this.uploadButton);
 
-        this.playCopyButton.onclick = () => this.playCopyAudio();
+        //this.playCopyButton.onclick = () => this.playCopyAudio();
 
         moment.locale('es');
         this.audioHandler = new AudioHandler(this.uuid);
@@ -201,7 +201,7 @@ class App {
         this.audioHandler.init();
     }
 
-    playCopyAudio() {
+    /*playCopyAudio() {
         var name = navigator.clipboard.readText().then((clipText) => {
             (fetch(`../api${clipText}`).then(r => 
                 r.blob()
@@ -214,7 +214,7 @@ class App {
             }))
         });
 
-    }
+    }*/
 
 }
 

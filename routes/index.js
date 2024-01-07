@@ -50,7 +50,11 @@ router.post('/register',(req,res) => {
 });
 
 router.get('/main', function(req, res, next){
-  res.render("main");
+  if(req.session.name) {
+    return res.render('main');
+  }
+  res.render('login');
+  
 });
 
 router.get('/', function(req, res, next) {

@@ -138,13 +138,18 @@ router.get("/play/:filename", (req, res, next) => {
     }
   });
 });
+
+router.get("/play/preparar/:filename", (req, res, next) =>{
+  res.render("copiedAudio.ejs");
+} )
+
 function cleanup() {
   let tsNow = Date.now();
   db.recordings.find({}, (err, doc) => {
     if (err) {
       res.send(err);
     } else {
-      let idCaducados = doc.filter(r => tsNow - r.date > 432000).map(r => r.filename);
+      let idCaducados = doc.filter(r => tsNow - r.accessed > 432000000).map(r => r.filename);
       db.recordings.remove({ filename: { $in: idCaducados } });
       idCaducados.forEach(fileaborr => {
         var filepath = `./recordings/${fileaborr}`;

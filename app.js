@@ -44,6 +44,6 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-setInterval(api.cleanup, 3600);
+setInterval(api.cleanup, 3600000);
 
 module.exports = app;

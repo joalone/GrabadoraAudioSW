@@ -21,6 +21,8 @@ body {
   font-size: 15px;
   color: beige;
   font-weight: bold;
+  white-space: nowrap; 
+  overflow: hidden;
 }
 
 #playcopy {
@@ -34,6 +36,8 @@ body {
   font-size: 15px;
   color: beige;
   font-weight: bold;
+  white-space: nowrap; 
+  overflow: hidden;
 }
 
 section {
